@@ -1,8 +1,10 @@
+
 import java.io.*;
 import java.sql.*;
 import java.util.*;
 
 public class StudentManagementSystem {
+
     private static Scanner scanner = new Scanner(System.in);
     private static Connection connection;
     private static String userRole;
@@ -16,7 +18,7 @@ public class StudentManagementSystem {
             if (login()) {
                 while (true) {
                     clear();
-                    System.out.println("\nStudent Management System");
+                    System.out.println("~~ Student Management System ~~");
 
                     if (userRole.equals("admin")) {
                         displayAdminMenu();
@@ -31,55 +33,92 @@ public class StudentManagementSystem {
 
                     switch (choice) {
                         case 1:
-                            if (userRole.equals("admin")) addStudent();
-                            else if (userRole.equals("teacher")) addStudent();
-                            else if (userRole.equals("student")) viewmydetials();
+                            if (userRole.equals("admin")) {
+                                addStudent(); 
+                            }else if (userRole.equals("teacher")) {
+                                addStudent(); 
+                            }else if (userRole.equals("student")) {
+                                viewmydetials();
+                            }
                             break;
                         case 2:
-                            if (userRole.equals("admin")) viewStudents();
-                            else if (userRole.equals("teacher")) viewStudents();
-                            else if (userRole.equals("student")) searchStudent();
+                            if (userRole.equals("admin")) {
+                                viewStudents(); 
+                            }else if (userRole.equals("teacher")) {
+                                viewStudents(); 
+                            }else if (userRole.equals("student")) {
+                                searchStudent();
+                            }
                             break;
                         case 3:
-                            if (userRole.equals("admin")) searchStudent();
-                            else if (userRole.equals("teacher")) searchStudent();
-                            else if (userRole.equals("student")) updateStudent();
+                            if (userRole.equals("admin")) {
+                                searchStudent(); 
+                            }else if (userRole.equals("teacher")) {
+                                searchStudent(); 
+                            }else if (userRole.equals("student")) {
+                                updateStudent();
+                            }
                             break;
                         case 4:
-                            if (userRole.equals("admin")) updateStudent();
-                            else if (userRole.equals("teacher")) updateStudent();
-                            else if (userRole.equals("student")) sortStudents();
+                            if (userRole.equals("admin")) {
+                                updateStudent(); 
+                            }else if (userRole.equals("teacher")) {
+                                updateStudent(); 
+                            }else if (userRole.equals("student")) {
+                                sortStudents();
+                            }
                             break;
                         case 5:
-                            if (userRole.equals("admin")) deleteStudent();
-                            else if (userRole.equals("teacher")) deleteStudent();
-                            else if (userRole.equals("student")) exportDataToCSV();
+                            if (userRole.equals("admin")) {
+                                deleteStudent(); 
+                            }else if (userRole.equals("teacher")) {
+                                deleteStudent(); 
+                            }else if (userRole.equals("student")) {
+                                exportDataToCSV();
+                            }
                             break;
                         case 6:
-                            if (userRole.equals("admin")) sortStudents();
-                            else if (userRole.equals("teacher")) sortStudents();
+                            if (userRole.equals("admin")) {
+                                sortStudents(); 
+                            }else if (userRole.equals("teacher")) {
+                                sortStudents();
+                            }
                             break;
                         case 7:
-                            if (userRole.equals("admin")) addStudentGrade();
-                            else if (userRole.equals("teacher")) addStudentGrade();
+                            if (userRole.equals("admin")) {
+                                addStudentGrade(); 
+                            }else if (userRole.equals("teacher")) {
+                                addStudentGrade();
+                            }
                             break;
                         case 8:
-                            if (userRole.equals("admin")) addAttendance();
-                            else if (userRole.equals("teacher")) addAttendance();
+                            if (userRole.equals("admin")) {
+                                addAttendance(); 
+                            }else if (userRole.equals("teacher")) {
+                                addAttendance();
+                            }
                             break;
                         case 9:
-                            if (userRole.equals("admin")) manageCourses();
-                            else if (userRole.equals("teacher")) manageCourses();
+                            if (userRole.equals("admin")) {
+                                manageCourses(); 
+                            }else if (userRole.equals("teacher")) {
+                                manageCourses();
+                            }
                             break;
                         case 10:
-                            if (userRole.equals("admin")) manageTeachers();
-                            else if (userRole.equals("teacher")) exportDataToCSV();
+                            if (userRole.equals("admin")) {
+                                manageTeachers(); 
+                            }else if (userRole.equals("teacher")) {
+                                exportDataToCSV();
+                            }
                             break;
                         case 11:
-                            if (userRole.equals("admin")) exportDataToCSV();
+                            if (userRole.equals("admin")) {
+                                exportDataToCSV();
+                            }
                             break;
                         case 0:
-                            exitProgram();
+                            main(args);
                             return;
                         default:
                             System.out.println("Invalid choice. Please try again.");
@@ -89,7 +128,7 @@ public class StudentManagementSystem {
                     scanner.nextLine();
                 }
             } else {
-                System.out.println("Authentication failed.");
+                System.out.println("Authentication failed because of invalid ID/Name");
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -130,14 +169,34 @@ public class StudentManagementSystem {
     }
 
     private static boolean login() throws SQLException {
-        System.out.print("Enter role (admin/teacher/student): ");
-        String role = scanner.nextLine().trim().toLowerCase();
-
-        if (!role.equals("admin") && !role.equals("teacher") && !role.equals("student")) {
-            System.out.println("Invalid role.");
-            return false;
+        clear();
+        System.out.println("~~ Login as ~~");
+        System.out.println("1.admin");
+        System.out.println("2.teacher");
+        System.out.println("3.student");
+        System.out.println("0.Exit");
+        String role = "";
+        while (!role.equals("admin") && !role.equals("teacher") && !role.equals("student")) {
+            System.out.print("Enter role : ");
+            int rolenum = scanner.nextInt();
+            switch (rolenum) {
+                case 1:
+                    role = "admin";
+                    break;
+                case 2:
+                    role = "teacher";
+                    break;
+                case 3:
+                    role = "student";
+                    break;
+                case 0:
+                    System.exit(0);
+                default:
+                    System.out.println("Invalid choice. Please try again.");
+            }
         }
 
+        clear();
         System.out.print("Enter ID: ");
         int id = scanner.nextInt();
         scanner.nextLine();  // Consume newline
@@ -151,7 +210,9 @@ public class StudentManagementSystem {
 
     private static boolean authenticate(String role, int id, String name) throws SQLException {
         String tableName = role + "s";
-        if (role.equals("student")) studentid=id;
+        if (role.equals("student")) {
+            studentid = id;
+        }
 
         String sql = "SELECT * FROM " + tableName + " WHERE id = ? AND name = ?";
         try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
@@ -175,9 +236,9 @@ public class StudentManagementSystem {
         System.out.println("7. Add Grades");
         System.out.println("8. Attendance");
         System.out.println("9. Manage Courses");
-        System.out.println("10. Manage Teachers");
-        System.out.println("11. Export Students Data to CSV");
-        System.out.println("0. Exit");
+        System.out.println("10.Manage Teachers");
+        System.out.println("11.Export Students Data to CSV");
+        System.out.println("0. Logout");
         System.out.print("Choose an option: ");
     }
 
@@ -191,8 +252,8 @@ public class StudentManagementSystem {
         System.out.println("7. Add Grades");
         System.out.println("8. Attendance");
         System.out.println("9. Manage Courses");
-        System.out.println("10. Export Students Data to CSV");
-        System.out.println("0. Exit");
+        System.out.println("10.Export Students Data to CSV");
+        System.out.println("0. Logout");
         System.out.print("Choose an option: ");
     }
 
@@ -202,7 +263,7 @@ public class StudentManagementSystem {
         System.out.println("3. Update My Details");
         System.out.println("4. Sort Students");
         System.out.println("5. Export Students Data to CSV");
-        System.out.println("0. Exit");
+        System.out.println("0. Logout");
         System.out.print("Choose an option: ");
     }
 
@@ -249,11 +310,10 @@ public class StudentManagementSystem {
 
     private static void viewStudents() {
         clear();
-        String sql = "SELECT students.id, students.name, students.age, courses.name AS course, "+
-        "(SELECT AVG(grade) FROM student_grades sg JOIN exams e ON sg.exam_id = e.id WHERE sg.student_id = students.id) AS grade "+
-        " FROM students JOIN courses ON students.course_id = courses.id";
-        try (Statement stmt = connection.createStatement();
-             ResultSet rs = stmt.executeQuery(sql)) {
+        String sql = "SELECT students.id, students.name, students.age, courses.name AS course, "
+                + "(SELECT AVG(grade) FROM student_grades sg JOIN exams e ON sg.exam_id = e.id WHERE sg.student_id = students.id) AS grade "
+                + " FROM students JOIN courses ON students.course_id = courses.id";
+        try (Statement stmt = connection.createStatement(); ResultSet rs = stmt.executeQuery(sql)) {
             while (rs.next()) {
                 System.out.print("ID: " + rs.getInt("id"));
                 System.out.print(" Name: " + rs.getString("name"));
@@ -270,13 +330,13 @@ public class StudentManagementSystem {
     private static void viewmydetials() {
         clear();
         int id = studentid;
-        String sql = "SELECT students.id, students.name, students.age, courses.name AS course, AVG(student_grades.grade) AS average_grade " +
-                     "FROM students " +
-                     "JOIN courses ON students.course_id = courses.id " +
-                     "LEFT JOIN student_grades ON students.id = student_grades.student_id " +
-                     "WHERE students.id = ? " +
-                     "GROUP BY students.id, students.name, students.age, courses.name";
-    
+        String sql = "SELECT students.id, students.name, students.age, courses.name AS course, AVG(student_grades.grade) AS average_grade "
+                + "FROM students "
+                + "JOIN courses ON students.course_id = courses.id "
+                + "LEFT JOIN student_grades ON students.id = student_grades.student_id "
+                + "WHERE students.id = ? "
+                + "GROUP BY students.id, students.name, students.age, courses.name";
+
         try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
             pstmt.setInt(1, id);
             ResultSet rs = pstmt.executeQuery();
@@ -294,19 +354,20 @@ public class StudentManagementSystem {
             System.out.println("Error searching student: " + e.getMessage());
         }
     }
+
     private static void searchStudent() {
         clear();
         System.out.print("Enter student ID to search: ");
         int id = scanner.nextInt();
         scanner.nextLine();  // Consume newline
-    
-        String sql = "SELECT students.id, students.name, students.age, courses.name AS course, AVG(student_grades.grade) AS average_grade " +
-                     "FROM students " +
-                     "JOIN courses ON students.course_id = courses.id " +
-                     "LEFT JOIN student_grades ON students.id = student_grades.student_id " +
-                     "WHERE students.id = ? " +
-                     "GROUP BY students.id, students.name, students.age, courses.name";
-    
+
+        String sql = "SELECT students.id, students.name, students.age, courses.name AS course, AVG(student_grades.grade) AS average_grade "
+                + "FROM students "
+                + "JOIN courses ON students.course_id = courses.id "
+                + "LEFT JOIN student_grades ON students.id = student_grades.student_id "
+                + "WHERE students.id = ? "
+                + "GROUP BY students.id, students.name, students.age, courses.name";
+
         try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
             pstmt.setInt(1, id);
             ResultSet rs = pstmt.executeQuery();
@@ -324,7 +385,6 @@ public class StudentManagementSystem {
             System.out.println("Error searching student: " + e.getMessage());
         }
     }
-    
 
     private static void updateStudent() {
         clear();
@@ -392,41 +452,56 @@ public class StudentManagementSystem {
         System.out.print("Choose an option: ");
         int choice = scanner.nextInt();
         scanner.nextLine();  // Consume newline
-
+    
         String orderBy = "";
         String orderin = "";
         switch (choice) {
-            case 1: orderBy = "id"; orderin=" ASC"; break;
-            case 2: orderBy = "name";orderin=" ASC"; break;
-            case 3: orderBy = "age";orderin=" DESC"; break;
-            case 4: orderBy = "course_id";orderin=" ASC"; break;
-            case 5: orderBy = "grade";orderin=" DESC"; break;
+            case 1:
+                orderBy = "s.id";
+                orderin = " ASC";
+                break;
+            case 2:
+                orderBy = "s.name";
+                orderin = " ASC";
+                break;
+            case 3:
+                orderBy = "s.age";
+                orderin = " DESC";
+                break;
+            case 4:
+                orderBy = "c.name";
+                orderin = " ASC";
+                break;
+            case 5:
+                orderBy = "grade";
+                orderin = " DESC";
+                break;
             default:
                 System.out.println("Invalid choice. Please try again.");
                 return;
         }
-
-        String sql = "SELECT s.id, s.name, s.age, s.course_id, " +
-                     "(SELECT AVG(grade) FROM student_grades sg JOIN exams e ON sg.exam_id = e.id WHERE sg.student_id = s.id) AS grade " +
-                     "FROM students s ORDER BY " + orderBy + orderin;
-
-        try (Statement stmt = connection.createStatement();
-             ResultSet rs = stmt.executeQuery(sql)) {
-
+    
+        String sql = "SELECT s.id, s.name, s.age, c.name AS course_name, "
+                   + "(SELECT AVG(grade) FROM student_grades sg JOIN exams e ON sg.exam_id = e.id WHERE sg.student_id = s.id) AS grade "
+                   + "FROM students s "
+                   + "JOIN courses c ON s.course_id = c.id "
+                   + "ORDER BY " + orderBy + orderin;
+    
+        try (Statement stmt = connection.createStatement(); ResultSet rs = stmt.executeQuery(sql)) {
             while (rs.next()) {
                 int id = rs.getInt("id");
                 String name = rs.getString("name");
                 int age = rs.getInt("age");
-                String course = rs.getString("course_id");
+                String courseName = rs.getString("course_name");
                 double grade = rs.getDouble("grade");
                 System.out.printf("ID: %d, Name: %s, Age: %d, Course: %s, Grade: %.2f%n",
-                                  id, name, age, course, grade);
+                                  id, name, age, courseName, grade);
             }
         } catch (SQLException e) {
             System.out.println("Error sorting students: " + e.getMessage());
         }
     }
-
+    
 
     private static void addStudentGrade() {
         clear();
@@ -568,12 +643,10 @@ public class StudentManagementSystem {
         }
     }
 
-
     private static void viewCourses() {
         clear();
         String sql = "SELECT * FROM courses";
-        try (Statement stmt = connection.createStatement();
-             ResultSet rs = stmt.executeQuery(sql)) {
+        try (Statement stmt = connection.createStatement(); ResultSet rs = stmt.executeQuery(sql)) {
             while (rs.next()) {
                 System.out.println("ID: " + rs.getInt("id"));
                 System.out.println("Name: " + rs.getString("name"));
@@ -589,6 +662,11 @@ public class StudentManagementSystem {
         System.out.print("Enter teacher ID: ");
         int id = scanner.nextInt();
         scanner.nextLine();  // Consume newline
+
+        if (isIdExist(id, "teachers")) {
+            System.out.println("ID already exists. Please enter a unique ID.");
+            return;
+        }
 
         System.out.print("Enter teacher name: ");
         String name = scanner.nextLine();
@@ -670,8 +748,7 @@ public class StudentManagementSystem {
     private static void viewTeachers() {
         clear();
         String sql = "SELECT teachers.id, teachers.name, courses.name AS course FROM teachers JOIN courses ON teachers.course_id = courses.id";
-        try (Statement stmt = connection.createStatement();
-             ResultSet rs = stmt.executeQuery(sql)) {
+        try (Statement stmt = connection.createStatement(); ResultSet rs = stmt.executeQuery(sql)) {
             while (rs.next()) {
                 System.out.println("ID: " + rs.getInt("id"));
                 System.out.println("Name: " + rs.getString("name"));
@@ -686,9 +763,7 @@ public class StudentManagementSystem {
     private static void exportDataToCSV() {
         clear();
         String sql = "SELECT * FROM students";
-        try (Statement stmt = connection.createStatement();
-             ResultSet rs = stmt.executeQuery(sql);
-             FileWriter csv = new FileWriter("students.csv")) {
+        try (Statement stmt = connection.createStatement(); ResultSet rs = stmt.executeQuery(sql); FileWriter csv = new FileWriter("students.csv")) {
 
             csv.append("ID,Name,Age,Course\n");
 
