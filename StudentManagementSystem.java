@@ -883,27 +883,40 @@ public class StudentManagementSystem {
 
     private static void exportDataToCSV() {
         clear();
-        String sql = "SELECT * FROM students";
-        try (Statement stmt = connection.createStatement(); ResultSet rs = stmt.executeQuery(sql); FileWriter csv = new FileWriter("students.csv")) {
-
-            csv.append("ID,Name,Age,Course\n");
-
+        System.out.print("Enter file name to export data (e.g., students.csv): ");
+        String fileName = scanner.nextLine();
+    
+        String sql = "SELECT students.id, students.name, students.age, courses.name AS course, "
+                + "(SELECT AVG(grade) FROM student_grades sg JOIN exams e ON sg.exam_id = e.id WHERE sg.student_id = students.id) AS grade, "
+                + "(SELECT COUNT(*) FROM attendance WHERE student_id = students.id AND status = 'p') AS total_present, "
+                + "(SELECT COUNT(*) FROM attendance WHERE student_id = students.id AND status = 'a') AS total_absent "
+                + "FROM students JOIN courses ON students.course_id = courses.id";
+    
+        try (Statement stmt = connection.createStatement();
+             ResultSet rs = stmt.executeQuery(sql);
+             PrintWriter writer = new PrintWriter(new File(fileName))) {
+    
+            writer.println("ID,Name,Age,Course,Grade,Total Present,Total Absent,Total Classes");
+    
             while (rs.next()) {
                 int id = rs.getInt("id");
                 String name = rs.getString("name");
                 int age = rs.getInt("age");
-                int courseId = rs.getInt("course_id");
-
-                String courseName = getCourseName(courseId);
-
-                csv.append(String.format("%d,%s,%d,%s\n", id, name, age, courseName));
+                String course = rs.getString("course");
+                double grade = rs.getDouble("grade");
+                int totalPresent = rs.getInt("total_present");
+                int totalAbsent = rs.getInt("total_absent");
+                int totalClasses = totalPresent + totalAbsent;
+    
+                writer.printf("%d,%s,%d,%s,%.2f,%d,%d,%d%n",
+                        id, name, age, course, grade, totalPresent, totalAbsent, totalClasses);
             }
-
-            System.out.println("Data exported to students.csv successfully.");
-        } catch (IOException | SQLException e) {
+            System.out.println("Data exported successfully to " + fileName);
+        } catch (SQLException | FileNotFoundException e) {
             System.out.println("Error exporting data: " + e.getMessage());
         }
     }
+    
 
     private static String getCourseName(int courseId) throws SQLException {
         String sql = "SELECT name FROM courses WHERE id = ?";
