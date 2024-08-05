@@ -93,9 +93,9 @@ public class StudentManagementSystem {
                             break;
                         case 8:
                             if (userRole.equals("admin")) {
-                                addAttendance(); 
+                                takeAttendance(); 
                             }else if (userRole.equals("teacher")) {
-                                addAttendance();
+                                takeAttendance();
                             }
                             break;
                         case 9:
@@ -153,7 +153,8 @@ public class StudentManagementSystem {
             "CREATE TABLE IF NOT EXISTS courses (id INTEGER PRIMARY KEY, name TEXT NOT NULL)",
             "CREATE TABLE IF NOT EXISTS exams (id INTEGER PRIMARY KEY, period INTEGER NOT NULL, exam_number INTEGER NOT NULL, course_id INTEGER, FOREIGN KEY(course_id) REFERENCES courses(id))",
             "CREATE TABLE IF NOT EXISTS student_grades (id INTEGER PRIMARY KEY AUTOINCREMENT, student_id INTEGER NOT NULL, exam_id INTEGER NOT NULL, grade REAL NOT NULL, FOREIGN KEY(student_id) REFERENCES students(id), FOREIGN KEY(exam_id) REFERENCES exams(id))",
-            "CREATE TABLE IF NOT EXISTS admins (id INTEGER PRIMARY KEY, name TEXT NOT NULL)"
+            "CREATE TABLE IF NOT EXISTS admins (id INTEGER PRIMARY KEY, name TEXT NOT NULL)",
+            "CREATE TABLE IF NOT EXISTS attendance (student_id INTEGER,time TEXT NOT NULL,status TEXT NOT NULL,FOREIGN KEY (student_id) REFERENCES students(id))"
         };
 
         try (Statement stmt = connection.createStatement()) {
@@ -311,8 +312,10 @@ public class StudentManagementSystem {
     private static void viewStudents() {
         clear();
         String sql = "SELECT students.id, students.name, students.age, courses.name AS course, "
-                + "(SELECT AVG(grade) FROM student_grades sg JOIN exams e ON sg.exam_id = e.id WHERE sg.student_id = students.id) AS grade "
-                + " FROM students JOIN courses ON students.course_id = courses.id";
+                + "(SELECT AVG(grade) FROM student_grades sg JOIN exams e ON sg.exam_id = e.id WHERE sg.student_id = students.id) AS grade, "
+                + "(SELECT COUNT(*) FROM attendance WHERE student_id = students.id AND status = 'p') AS total_present, "
+                + "(SELECT COUNT(*) FROM attendance WHERE student_id = students.id AND status = 'a') AS total_absent "
+                + "FROM students JOIN courses ON students.course_id = courses.id";
         try (Statement stmt = connection.createStatement(); ResultSet rs = stmt.executeQuery(sql)) {
             while (rs.next()) {
                 System.out.print("ID: " + rs.getInt("id"));
@@ -320,23 +323,29 @@ public class StudentManagementSystem {
                 System.out.print(" Age: " + rs.getInt("age"));
                 System.out.print(" Course: " + rs.getString("course"));
                 System.out.print(" Grade: " + String.format("%.2f", rs.getDouble("grade")));
+                System.out.print(" Total Present: " + rs.getInt("total_present"));
+                System.out.print(" Total Absent: " + rs.getInt("total_absent"));
+                System.out.print(" Total Classes: " + (rs.getInt("total_present") + rs.getInt("total_absent")));
                 System.out.println();
             }
         } catch (SQLException e) {
             System.out.println("Error viewing students: " + e.getMessage());
         }
     }
+    
 
     private static void viewmydetials() {
         clear();
         int id = studentid;
-        String sql = "SELECT students.id, students.name, students.age, courses.name AS course, AVG(student_grades.grade) AS average_grade "
+        String sql = "SELECT students.id, students.name, students.age, courses.name AS course, AVG(student_grades.grade) AS average_grade, "
+                + "(SELECT COUNT(*) FROM attendance WHERE student_id = students.id AND status = 'p') AS total_present, "
+                + "(SELECT COUNT(*) FROM attendance WHERE student_id = students.id AND status = 'a') AS total_absent "
                 + "FROM students "
                 + "JOIN courses ON students.course_id = courses.id "
                 + "LEFT JOIN student_grades ON students.id = student_grades.student_id "
                 + "WHERE students.id = ? "
                 + "GROUP BY students.id, students.name, students.age, courses.name";
-
+    
         try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
             pstmt.setInt(1, id);
             ResultSet rs = pstmt.executeQuery();
@@ -346,7 +355,13 @@ public class StudentManagementSystem {
                 System.out.println("Age: " + rs.getInt("age"));
                 System.out.println("Course: " + rs.getString("course"));
                 double averageGrade = rs.getDouble("average_grade");
+                int totalPresent = rs.getInt("total_present");
+                int totalAbsent = rs.getInt("total_absent");
+                int totalClasses = totalPresent + totalAbsent;
                 System.out.printf("Average Grade: %.2f%n", averageGrade);
+                System.out.println("Total Present: " + totalPresent);
+                System.out.println("Total Absent: " + totalAbsent);
+                System.out.println("Total Classes: " + totalClasses);
             } else {
                 System.out.println("Student not found.");
             }
@@ -354,20 +369,23 @@ public class StudentManagementSystem {
             System.out.println("Error searching student: " + e.getMessage());
         }
     }
+    
 
     private static void searchStudent() {
         clear();
         System.out.print("Enter student ID to search: ");
         int id = scanner.nextInt();
         scanner.nextLine();  // Consume newline
-
-        String sql = "SELECT students.id, students.name, students.age, courses.name AS course, AVG(student_grades.grade) AS average_grade "
+    
+        String sql = "SELECT students.id, students.name, students.age, courses.name AS course, AVG(student_grades.grade) AS average_grade, "
+                + "(SELECT COUNT(*) FROM attendance WHERE student_id = students.id AND status = 'p') AS total_present, "
+                + "(SELECT COUNT(*) FROM attendance WHERE student_id = students.id AND status = 'a') AS total_absent "
                 + "FROM students "
                 + "JOIN courses ON students.course_id = courses.id "
                 + "LEFT JOIN student_grades ON students.id = student_grades.student_id "
                 + "WHERE students.id = ? "
                 + "GROUP BY students.id, students.name, students.age, courses.name";
-
+    
         try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
             pstmt.setInt(1, id);
             ResultSet rs = pstmt.executeQuery();
@@ -377,7 +395,13 @@ public class StudentManagementSystem {
                 System.out.println("Age: " + rs.getInt("age"));
                 System.out.println("Course: " + rs.getString("course"));
                 double averageGrade = rs.getDouble("average_grade");
+                int totalPresent = rs.getInt("total_present");
+                int totalAbsent = rs.getInt("total_absent");
+                int totalClasses = totalPresent + totalAbsent;
                 System.out.printf("Average Grade: %.2f%n", averageGrade);
+                System.out.println("Total Present: " + totalPresent);
+                System.out.println("Total Absent: " + totalAbsent);
+                System.out.println("Total Classes: " + totalClasses);
             } else {
                 System.out.println("Student not found.");
             }
@@ -385,6 +409,7 @@ public class StudentManagementSystem {
             System.out.println("Error searching student: " + e.getMessage());
         }
     }
+    
 
     private static void updateStudent() {
         clear();
@@ -449,6 +474,7 @@ public class StudentManagementSystem {
         System.out.println("3. Age");
         System.out.println("4. Course");
         System.out.println("5. Grade");
+        System.out.println("6. Attendance");
         System.out.print("Choose an option: ");
         int choice = scanner.nextInt();
         scanner.nextLine();  // Consume newline
@@ -476,13 +502,19 @@ public class StudentManagementSystem {
                 orderBy = "grade";
                 orderin = " DESC";
                 break;
+            case 6:
+                orderBy = "total_present DESC, total_absent ASC";
+                orderin = "";
+                break;
             default:
                 System.out.println("Invalid choice. Please try again.");
                 return;
         }
     
         String sql = "SELECT s.id, s.name, s.age, c.name AS course_name, "
-                   + "(SELECT AVG(grade) FROM student_grades sg JOIN exams e ON sg.exam_id = e.id WHERE sg.student_id = s.id) AS grade "
+                   + "(SELECT AVG(grade) FROM student_grades sg JOIN exams e ON sg.exam_id = e.id WHERE sg.student_id = s.id) AS grade, "
+                   + "(SELECT COUNT(*) FROM attendance WHERE student_id = s.id AND status = 'p') AS total_present, "
+                   + "(SELECT COUNT(*) FROM attendance WHERE student_id = s.id AND status = 'a') AS total_absent "
                    + "FROM students s "
                    + "JOIN courses c ON s.course_id = c.id "
                    + "ORDER BY " + orderBy + orderin;
@@ -494,13 +526,17 @@ public class StudentManagementSystem {
                 int age = rs.getInt("age");
                 String courseName = rs.getString("course_name");
                 double grade = rs.getDouble("grade");
-                System.out.printf("ID: %d, Name: %s, Age: %d, Course: %s, Grade: %.2f%n",
-                                  id, name, age, courseName, grade);
+                int totalPresent = rs.getInt("total_present");
+                int totalAbsent = rs.getInt("total_absent");
+                int totalClasses = totalPresent + totalAbsent;
+                System.out.printf("ID: %d, Name: %s, Age: %d, Course: %s, Grade: %.2f, Total Present: %d, Total Absent: %d, Total Classes: %d%n",
+                                  id, name, age, courseName, grade, totalPresent, totalAbsent, totalClasses);
             }
         } catch (SQLException e) {
             System.out.println("Error sorting students: " + e.getMessage());
         }
     }
+    
     
 
     private static void addStudentGrade() {
@@ -534,10 +570,95 @@ public class StudentManagementSystem {
         }
     }
 
-    private static void addAttendance() {
-        clear();
-        System.out.println("Adding attendance is not yet implemented.");
+    private static void listCoursesWithStudentCount() {
+        String sql = "SELECT c.id, c.name, COUNT(s.id) AS student_count " +
+                     "FROM courses c " +
+                     "LEFT JOIN students s ON c.id = s.course_id " +
+                     "GROUP BY c.id, c.name";
+
+        try (Statement stmt = connection.createStatement(); ResultSet rs = stmt.executeQuery(sql)) {
+            System.out.println("Courses with number of students:");
+            while (rs.next()) {
+                int courseId = rs.getInt("id");
+                String courseName = rs.getString("name");
+                int studentCount = rs.getInt("student_count");
+                System.out.printf("Course ID: %d, Course: %s, Students: %d%n", courseId, courseName, studentCount);
+            }
+        } catch (SQLException e) {
+            System.out.println("Error listing courses: " + e.getMessage());
+        }
     }
+
+    private static void takeAttendance() {
+        clear();
+        listCoursesWithStudentCount();
+        System.out.println("0.Exit ");
+        System.out.print("Enter course ID to take attendance (or) Exit: ");
+        int courseId = scanner.nextInt();
+        scanner.nextLine();  // Consume newline
+        if (courseId == 0) {
+            return;
+        }
+    
+        clear();
+        System.out.println("1. Take Attendance");
+        System.out.println("2. View Attendance");
+        System.out.print("Choose an option: ");
+        int choice = scanner.nextInt();
+        scanner.nextLine();  // Consume newline
+    
+        if (choice == 1) {
+            String sql = "SELECT id, name FROM students WHERE course_id = ?";
+            try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
+                pstmt.setInt(1, courseId);
+                ResultSet rs = pstmt.executeQuery();
+                List<Integer> studentIds = new ArrayList<>();
+                List<String> statuses = new ArrayList<>();
+                while (rs.next()) {
+                    int studentId = rs.getInt("id");
+                    studentIds.add(studentId);
+                    System.out.print("Student ID: " + studentId);
+                    System.out.print(" Name: " + rs.getString("name"));
+                    System.out.print(" (p=present, a=absent): ");
+                    String status = scanner.nextLine();
+                    statuses.add(status);
+                }
+    
+                sql = "INSERT INTO attendance (student_id, time, status) VALUES (?, datetime('now'), ?)";
+                try (PreparedStatement pstmt2 = connection.prepareStatement(sql)) {
+                    for (int i = 0; i < studentIds.size(); i++) {
+                        pstmt2.setInt(1, studentIds.get(i));
+                        pstmt2.setString(2, statuses.get(i));
+                        pstmt2.addBatch();
+                    }
+                    pstmt2.executeBatch();
+                }
+                System.out.println("Attendance taken successfully.");
+            } catch (SQLException e) {
+                System.out.println("Error taking attendance: " + e.getMessage());
+            }
+        } else if (choice == 2) {
+            String sql = "SELECT students.id, students.name, attendance.time, attendance.status FROM attendance "
+                       + "JOIN students ON attendance.student_id = students.id "
+                       + "WHERE students.course_id = ? ORDER BY attendance.time";
+            try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
+                pstmt.setInt(1, courseId);
+                ResultSet rs = pstmt.executeQuery();
+                while (rs.next()) {
+                    int studentId = rs.getInt("id");
+                    String studentName = rs.getString("name");
+                    String time = rs.getString("time");
+                    String status = rs.getString("status");
+                    System.out.printf("Student ID: %d, Name: %s, Time: %s, Status: %s%n", studentId, studentName, time, status);
+                }
+            } catch (SQLException e) {
+                System.out.println("Error viewing attendance: " + e.getMessage());
+            }
+        } else {
+            System.out.println("Invalid choice. Please try again.");
+        }
+    }
+    
 
     private static void manageCourses() {
         clear();
