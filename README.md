@@ -20,7 +20,7 @@ The School Management System is a Java-based console application designed to man
 
 1.  **Clone the Repository:**
 
-        git clone https://github.com/PRIYADARSHAN-MAHENDRAN/STUDENT-MANAGEMENT.git
+        git clone https://github.com/PRIYADARSHAN-MAHENDRAN/SCHOOL-MANAGEMENT-SYSTEM.git
 
 2.  **Navigate to the Project Directory:**
 
